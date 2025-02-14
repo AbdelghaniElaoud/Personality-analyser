@@ -193,10 +193,5 @@ ng serve
 
 ---
 
-## 📌 Conclusion
-This project successfully integrates **AI-powered personality analysis** into a **Spring Boot + Angular application**. It provides real-time insights based on the **Big Five Personality Traits**. Future improvements can include:
-- Enhancing the AI model for deeper analysis.
-- Adding user authentication for personalized reports.
-- Storing past results for progress tracking.
 
 
