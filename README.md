@@ -50,7 +50,7 @@ The **Big Five** personality model categorizes human personality into five dimen
    - High score: Prone to stress, anxious.
    - Low score: Emotionally stable, resilient.
 
-![Big Five Model](https://upload.wikimedia.org/wikipedia/commons/6/65/Big_Five_personality_traits.svg)
+![Big Five Model](https://www.simplypsychology.org/big-five-personality.html)
 
 ---
 
@@ -65,7 +65,7 @@ The system is designed as a **client-server model**, where the **Angular fronten
 4. **AI Analysis**: The backend processes the data and generates a personality profile using OpenAI API.
 5. **Results Displayed**: The frontend receives the response and presents a personality summary.
 
-![System Architecture](https://www.researchgate.net/profile/Jorge-Reina-2/publication/328372710/figure/fig1/AS:680418833764354@1539980226797/Architecture-of-the-system.png)
+![System Architecture](https://thenounproject.com/icon/ai-model-7510676/)
 
 ---
 
@@ -201,5 +201,4 @@ This project successfully integrates **AI-powered personality analysis** into a 
 - Adding user authentication for personalized reports.
 - Storing past results for progress tracking.
 
-Let me know if you need any modifications! 🚀
 
