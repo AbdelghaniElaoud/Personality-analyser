@@ -1,0 +1,112 @@
+<div class="container" *ngIf="!submitted">
+  <div class="progress-bar">
+    <div class="progress-fill" [style.width.%]="progress"></div>
+    <span class="progress-text">{{progress.toFixed(0)}}% Complete</span>
+  </div>
+
+  <div *ngIf="questions?.length" class="questions-section">
+    <h2>Personality Assessment - Page {{currentPage + 1}} of {{totalPages}}</h2>
+
+    <div *ngFor="let question of currentQuestions" class="question-container">
+      <div class="question-content">
+        <span class="question-number">{{question.id}}</span>
+        {{ question.content }}
+      </div>
+      <div class="radio-group">
+        <label *ngFor="let value of [1,2,3,4,5]"
+               [class.selected]="responses.get(question.id) === value">
+          <input
+            type="radio"
+            [name]="'question_' + question.id"
+            [value]="value"
+            [checked]="responses.get(question.id) === value"
+            (change)="onResponseChange(question.id, value)"
+          >
+          <span class="radio-label">{{value}}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="navigation-buttons">
+      <button
+        *ngIf="currentPage > 0"
+        (click)="previousPage()"
+        class="nav-button">
+        ← Previous
+      </button>
+      <button
+        *ngIf="currentPage < totalPages - 1"
+        [disabled]="!canGoNext()"
+        (click)="nextPage()"
+        class="nav-button primary">
+        Next →
+      </button>
+      <button
+        *ngIf="currentPage === totalPages - 1"
+        [disabled]="!canGoNext()"
+        (click)="submitResponses()"
+        class="submit-button">
+        Submit Assessment
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" *ngIf="isLoading">
+  <div class="spinner"></div>
+  <div class="loading-text">Analyzing your responses...</div>
+
+</div>
+
+<div *ngIf="submitted && personalityResult" class="results-container">
+  <h2>Your Personality Analysis</h2>
+  <div class="personality-type">
+    <p>{{personalityResult?.typeOfThePersonality}}</p>
+  </div>
+
+  <div class="feedback-section">
+    <h3>What People Would Say About You</h3>
+    <p>{{personalityResult?.whatPeopleWouldSayAboutYou}}</p>
+  </div>
+
+  <div class="scores-section">
+    <h3>Your Personality Dimensions</h3>
+    <div class="score-bars">
+      <div class="score-bar">
+        <label>Openness to Experiences</label>
+        <div class="bar-container">
+          <div class="bar-fill" [style.width]="personalityResult?.LevelOfOpennessToExperiences"></div>
+          <span class="bar-value">{{personalityResult?.LevelOfOpennessToExperiences}}</span>
+        </div>
+      </div>
+      <div class="score-bar">
+        <label>Conscientiousness</label>
+        <div class="bar-container">
+          <div class="bar-fill" [style.width]="personalityResult?.Conscientiousness"></div>
+          <span class="bar-value">{{personalityResult?.Conscientiousness}}</span>
+        </div>
+      </div>
+      <div class="score-bar">
+        <label>Extraversion</label>
+        <div class="bar-container">
+          <div class="bar-fill" [style.width]="personalityResult?.Extraversion"></div>
+          <span class="bar-value">{{personalityResult?.Extraversion}}</span>
+        </div>
+      </div>
+      <div class="score-bar">
+        <label>Agreeableness</label>
+        <div class="bar-container">
+          <div class="bar-fill" [style.width]="personalityResult?.Agreeableness"></div>
+          <span class="bar-value">{{personalityResult?.Agreeableness}}</span>
+        </div>
+      </div>
+      <div class="score-bar">
+        <label>Neuroticism</label>
+        <div class="bar-container">
+          <div class="bar-fill" [style.width]="personalityResult?.Neuroticism"></div>
+          <span class="bar-value">{{personalityResult?.Neuroticism}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
