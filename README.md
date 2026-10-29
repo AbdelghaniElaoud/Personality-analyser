@@ -1,197 +1,82 @@
-# Big Five Personality Test - AI-Powered System
+# Personality-analyser
 
-## 📌 Overview
-This project is a **Big Five Personality Test** application built with **Angular 19** (frontend) and **Spring Boot** (backend). It allows users to answer a set of questions, submits their responses to an AI-powered backend, and receives a personality analysis based on the **Big Five Personality Traits**.
+**Fifty Big Five questions, five pages, then a local model writes the profile.**
 
----
+![Angular 19](https://img.shields.io/badge/Angular-19-red)
+![Spring Boot 3.4](https://img.shields.io/badge/Spring%20Boot-3.4-green)
+![Ollama](https://img.shields.io/badge/model-Ollama-black)
 
-## 🚀 Technologies Used
+Answer ten statements at a time, on a scale of 1 to 5. Submit sends the whole set to Spring AI, which asks the Ollama model on your machine. The page comes back with a paragraph, what people would say about you, and five bars.
 
-### **Backend (Spring Boot + Spring AI)**
-- **Spring Boot 3**: Framework for building RESTful APIs.
-- **Spring AI**: Used to integrate AI models for analyzing personality responses.
-- **Spring Data JPA**: ORM for database management.
-- **MySQL**: Database to store questions and responses.
-- **OpenAI API**: Generates personality analysis based on responses.
+![Page 1 of the assessment, before any answer](screenshots/personality-page1.png)
 
-### **Frontend (Angular 19)**
-- **Angular 19 Standalone Components**: Lightweight structure for better performance.
-- **Angular HTTPClient**: Communicates with the backend API.
-- **Bootstrap**: Used for styling and UI components.
+![Page 1 scored, 20% complete, Next unlocked](screenshots/personality-page1-answered.png)
 
----
-
-## 📖 The Big Five Personality Traits
-
-The **Big Five** personality model categorizes human personality into five dimensions:
-
-1. **Openness to Experience** 🌍
-   - Creativity, curiosity, and willingness to try new experiences.
-   - High score: Imaginative, open-minded.
-   - Low score: Prefers routine, traditional.
-
-2. **Conscientiousness** 📋
-   - Organization, responsibility, and dependability.
-   - High score: Hardworking, disciplined.
-   - Low score: Impulsive, less organized.
-
-3. **Extraversion** 🎉
-   - Sociability, assertiveness, and energy.
-   - High score: Outgoing, energetic.
-   - Low score: Reserved, prefers solitude.
-
-4. **Agreeableness** 🤝
-   - Compassion, cooperation, and trust.
-   - High score: Friendly, empathetic.
-   - Low score: Competitive, skeptical.
-
-5. **Neuroticism** 😟
-   - Emotional stability and tendency to experience negative emotions.
-   - High score: Prone to stress, anxious.
-   - Low score: Emotionally stable, resilient.
-
-
----
-
-## 📡 System Architecture
-
-The system is designed as a **client-server model**, where the **Angular frontend** communicates with the **Spring Boot backend**.
-
-### **Workflow**
-1. **User loads the test**: Angular fetches questions from the backend (`GET /api/question`).
-2. **User answers each question**: Responses are stored locally.
-3. **Submission**: Once all responses are collected, they are sent to the backend (`POST /api/person`).
-4. **AI Analysis**: The backend processes the data and generates a personality profile using OpenAI API.
-5. **Results Displayed**: The frontend receives the response and presents a personality summary.
-
-
----
-
-## 📂 Backend Components (Spring Boot + Spring AI)
-
-### **1️⃣ Model (JPA Entity)**
-```java
-@Entity
-public class Question {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String content;
-}
+```
+10 questions  -->  Next
+        ...
+page 5        -->  Submit
+                    |
+                    v
+            POST /api/person
+                    |
+                    v
+         Ollama  -->  five trait bars
 ```
 
-### **2️⃣ Repository (Spring Data JPA)**
-```java
-@Repository
-public interface QuestionRepository extends JpaRepository<Question, Long> {}
+## Why this exists
+
+A personality quiz on the web scores you on a server you do not run. This one keeps the questions in MySQL and the write-up on the model you already have in Ollama. You see the statements, the progress, and the bars in the same window.
+
+## Quick start
+
+Java 23, Maven, Node, MySQL, and [Ollama](https://ollama.com) on `http://localhost:11434`.
+
+`src/main/resources/application.properties` points at `jdbc:mysql://localhost:3306/perso-traits`. The username, password, and `spring.ai.ollama.chat.options.model` are blank in the file. Fill those in. Hibernate is set to `update`, so the first boot creates the tables and, if `question` is empty, loads the 50 statements.
+
+Compile with annotation processing turned on. Without it, Lombok never writes the getters and `mvn spring-boot:run` fails on `getContent()`.
+
+```bash
+git clone https://github.com/AbdelghaniElaoud/Personality-analyser.git && cd Personality-analyser
+mvn spring-boot:run -Dmaven.compiler.proc=full
 ```
 
-### **3️⃣ Service (Business Logic)**
-```java
-@Service
-public class QuestionService {
-    private final QuestionRepository repository;
-    public List<Question> getAllQuestions() { return repository.findAll(); }
-}
+In another terminal:
+
+```bash
+cd src/FE/persona && npm install && npx ng serve
 ```
 
-### **4️⃣ Controller (REST API)**
-```java
-@RestController
-@RequestMapping("/api/question")
-public class QuestionController {
-    @GetMapping
-    public List<Question> getQuestions() {
-        return questionService.getAllQuestions();
-    }
-}
-```
+1. Open http://127.0.0.1:4200/questions. The heading is **Personality Assessment - Page 1 of 5**.
+2. Score every row on the page. **Next** stays off until that page is complete. There are five pages, ten statements each.
+3. On the last page, **Submit Assessment**. The overlay says **Analyzing your responses...** The result replaces the form.
 
-### **5️⃣ AI-Powered Personality Analysis**
-```java
-@Service
-public class PersonalityService {
-    private final ChatClient chatClient;
-    public PersonalityAnalysis analyze(List<UserResponse> responses) {
-        String systemMessage = "Analyze the user's personality based on their responses...";
-        return chatClient.prompt().system(systemMessage).user(responses).call().entity(PersonalityAnalysis.class);
-    }
-}
-```
+## What you get
 
----
+- Fifty statements, grouped as openness, conscientiousness, extraversion, agreeableness, and neuroticism. The list is seeded once, from `DataInitializer`.
+- A fixed bar at the top that fills as you answer. **Previous** steps back without wiping the scores you already picked.
 
-## 🎨 Frontend Components (Angular 19)
+![Page 2, conscientiousness, 40% complete](screenshots/personality-page2.png)
 
-### **1️⃣ Model**
-```typescript
-export interface Question {
-  id: number;
-  content: string;
-}
-```
+![Page 5, 100% complete, ready to submit](screenshots/personality-page5.png)
 
-### **2️⃣ Service (HTTP Calls)**
-```typescript
-@Injectable({ providedIn: 'root' })
-export class QuestionService {
-  private baseUrl = 'http://localhost:8080/api/question';
-  constructor(private http: HttpClient) {}
-  getAll(): Observable<Question[]> {
-    return this.http.get<Question[]>(this.baseUrl);
-  }
-}
-```
+![Submit, with the spinner over the last page](screenshots/personality-analyzing.png)
 
-### **3️⃣ Component (Display Questions)**
-```typescript
-@Component({
-  selector: 'app-questions-list',
-  standalone: true,
-  templateUrl: './questions-list.component.html',
-})
-export class QuestionsListComponent implements OnInit {
-  questions: Question[] = [];
-  constructor(private questionService: QuestionService) {}
-  ngOnInit(): void {
-    this.questionService.getAll().subscribe(data => this.questions = data);
-  }
-}
-```
+- A result in the second person: a summary, a "what people would say" paragraph, and a percentage for each trait. The model is asked to average the 1 to 5 answers and to answer as "you are".
 
-### **4️⃣ HTML Template (List of Questions with Inputs)**
-```html
-<div class="container">
-  <h2>Big Five Personality Test</h2>
-  <ul>
-    @for (question of questions; track question.id) {
-      <li>{{ question.content }}
-        <input type="radio" name="q{{question.id}}" value="1"> Strongly Disagree
-        <input type="radio" name="q{{question.id}}" value="5"> Strongly Agree
-      </li>
-    }
-  </ul>
-  <button (click)="submitResponses()">Submit</button>
-</div>
-```
+One completed run, openness and agreeableness high, extraversion and neuroticism low, came back like this:
 
----
+![The five bars after submit](screenshots/personality-result.png)
 
-## 🔥 How to Run the Project
+Openness 85%. Conscientiousness 40%. Extraversion 20%. Agreeableness 85%. Neuroticism 10%. Those percentages are what that model returned for those answers. They are not a fixed formula in the Java code.
 
-### **1️⃣ Backend (Spring Boot)**
-```sh
-cd backend
-mvn spring-boot:run
-```
+- The questions API is `GET /api/question`. Submit is `POST /api/person`.
+- A second prompt on the same client, `GET /api/ask/{year}`, asks the model for a World Cup winner, squad, and host. The Angular app does not call it.
 
-### **2️⃣ Frontend (Angular 19)**
-```sh
-cd frontend
-npm install
-ng serve
-```
+## Make it yours
 
----
+The statements are the list in `DataInitializer`. The prompt and the five fields are `PromptMaster.personalityAnalysis` and the `Personality` record. The pages are `questions-list.component`. Fork it, change the tone of the prompt, or point `spring.ai.ollama.chat.options.model` at another local model, and open a pull request.
 
+If you wanted the quiz and the write-up on your own machine, [star the repo](https://github.com/AbdelghaniElaoud/Personality-analyser). [Star history](https://star-history.com/#AbdelghaniElaoud/Personality-analyser&Date).
 
-
+The repository does not ship a license file yet.
